@@ -1,8 +1,47 @@
-libgeotiff (1.7.0-deepin1) unstable; urgency=medium
+libgeotiff (1.7.1-3) unstable; urgency=medium
 
-  * Rebuild
+  * Bump Standards-Version to 4.6.2, no changes.
+  * Bump debhelper compat to 13.
+  * Use not-installed file instead of dh_install override.
+  * Enable Salsa CI.
+  * Add autopkgtest using upstream test scripts.
+  * Add upstream patch to fix FTBFS with PROJ 9.3.
+    (closes: #1050775)
+  * Update lintian overrides.
 
- -- Deepin Packages Builder <packages@deepin.org>  Fri, 11 Nov 2022 17:59:08 +0800
+ -- Bas Couwenberg <sebastic@debian.org>  Thu, 31 Aug 2023 18:06:14 +0200
+
+libgeotiff (1.7.1-2) unstable; urgency=medium
+
+  * Bump Standards-Version to 4.6.1, no changes.
+  * Drop obsolete dh_strip override, dbgsym migration complete.
+  * Add patch to fix FTBFS with PROJ 9.1.1.
+  * Update lintian overrides.
+  * Add Rules-Requires-Root to control file.
+
+ -- Bas Couwenberg <sebastic@debian.org>  Thu, 01 Dec 2022 11:14:27 +0100
+
+libgeotiff (1.7.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Move from experimental to unstable.
+
+ -- Bas Couwenberg <sebastic@debian.org>  Mon, 14 Mar 2022 12:50:17 +0100
+
+libgeotiff (1.7.1~rc2-1~exp1) experimental; urgency=medium
+
+  * New upstream release candidate.
+
+ -- Bas Couwenberg <sebastic@debian.org>  Thu, 10 Mar 2022 10:15:39 +0100
+
+libgeotiff (1.7.1~rc1-1~exp1) experimental; urgency=medium
+
+  * New upstream release candidate.
+  * Bump Standards-Version to 4.6.0, no changes.
+  * Bump debhelper compat to 12, changes:
+    - Drop --list-missing from dh_install
+
+ -- Bas Couwenberg <sebastic@debian.org>  Tue, 08 Mar 2022 17:30:10 +0100
 
 libgeotiff (1.7.0-2) unstable; urgency=medium
 
