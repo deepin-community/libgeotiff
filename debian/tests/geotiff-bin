@@ -1,0 +1,4 @@
+#!/bin/sh
+
+./test/testlistgeo /usr/bin/listgeo
+./test/testgeotifcp /usr/bin/geotifcp /usr/bin/listgeo
