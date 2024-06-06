@@ -53,11 +53,14 @@ libgeotiff_la_SOURCES = cpl_serv.c \
                         geo_strtod.c \
                         geotiff_proj4.c
 
-libgeotiff_la_LDFLAGS = -version-info 7:1:2 ${NOUNDEFINED}
+libgeotiff_la_LDFLAGS = -version-info 7:3:2 ${NOUNDEFINED}
 
 libgeotiff_la_LIBADD = libxtiff/libxtiff.la
 
 lib_LTLIBRARIES = libgeotiff.la
+
+pkgconfig_DATA = libgeotiff.pc
+pkgconfigdir = $(libdir)/pkgconfig
 
 EXTRA_DIST =    autogen.sh \
                 makefile.vc \
@@ -66,7 +69,6 @@ EXTRA_DIST =    autogen.sh \
                 README.WIN \
                 README_BIN \
                 LICENSE \
-                INSTALL \
                 CMakeLists.txt \
                 libxtiff/CMakeLists.txt \
                 bin/CMakeLists.txt \

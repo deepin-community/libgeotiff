@@ -74,10 +74,13 @@ libgeotiff.so.5 #PACKAGE# #MINVER#
  ST_SetKey@Base 1.3.0
  ST_TagType@Base 1.3.0
  XTIFFClientOpen@Base 1.3.0
+ XTIFFClientOpenExt@Base 1.7.2
  XTIFFClose@Base 1.3.0
  XTIFFFdOpen@Base 1.3.0
+ XTIFFFdOpenExt@Base 1.7.2
  XTIFFInitialize@Base 1.3.0
  XTIFFOpen@Base 1.3.0
+ XTIFFOpenExt@Base 1.7.2
  _GTIFFree@Base 1.3.0
  _GTIFSetDefaultTIFF@Base 1.3.0
  _GTIFcalloc@Base 1.3.0
