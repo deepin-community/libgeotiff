@@ -2,7 +2,7 @@
 
 m4_define([VERSION_MAJOR], [1])
 m4_define([VERSION_MINOR], [7])
-m4_define([VERSION_POINT], [1])
+m4_define([VERSION_POINT], [3])
 m4_define([GEOTIFF_VERSION],
           [VERSION_MAJOR.VERSION_MINOR.VERSION_POINT])
 
@@ -365,6 +365,7 @@ AC_CONFIG_FILES([
     man/man1/Makefile
     cmake/Makefile
     test/Makefile
+    libgeotiff.pc
 ])
 
 AC_OUTPUT

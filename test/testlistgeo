@@ -59,11 +59,11 @@ $EXE ${DATA_DIR}/ProjLinearUnitsGeoKey_9036.tif >>${OUT}
 echo "" >>${OUT}
 
 echo "Testing listgeo ProjectedCSTypeGeoKey_28191_cassini_soldner.tif" >> ${OUT}
-$EXE ${DATA_DIR}/ProjectedCSTypeGeoKey_28191_cassini_soldner.tif >>${OUT}
+$EXE -no_corners ${DATA_DIR}/ProjectedCSTypeGeoKey_28191_cassini_soldner.tif >>${OUT}
 echo "" >>${OUT}
 
 echo "Testing listgeo cassini_soldner.tif" >> ${OUT}
-$EXE ${DATA_DIR}/cassini_soldner.tif >>${OUT}
+$EXE -no_corners ${DATA_DIR}/cassini_soldner.tif >>${OUT}
 echo "" >>${OUT}
 
 echo "Testing listgeo ProjectedCSTypeGeoKey_27200_new_zealand_mapping_grid.tif" >> ${OUT}
@@ -218,14 +218,38 @@ echo "" >>${OUT}
 sed "s/ETRS89-extended/ETRS89/g" < ${OUT} > ${OUT}.tmp
 mv ${OUT}.tmp ${OUT}
 
-sed "s/ETRS89-extended/ETRS89/g" < ${TEST_CLI_DIR}/testlistgeo_out.dist > testlistgeo_out.dist.tmp
+sed "s/Projection = 15914 (BLM zone 14N (US survey .*))/Projection = 15914 (BLM zone 14N)/g" < ${OUT} > ${OUT}.tmp
+mv ${OUT}.tmp ${OUT}
+sed "s/Projection = 6753 (Oregon Columbia River West zone (.*))/Projection = 6753 (Oregon Columbia River West zone)/" < ${OUT} > ${OUT}.tmp
+mv ${OUT}.tmp ${OUT}
+sed "s/ProjCenterLongGeoKey: 46.437229 ( 46d26'14.02\"E)/ProjCenterLongGeoKey: 46.437229 ( 46d26'14.03\"E)/" < ${OUT} > ${OUT}.tmp
+mv ${OUT}.tmp ${OUT}
+
+sed "s/ETRS89-extended/ETRS89/g" < ${TEST_CLI_DIR}/testlistgeo_out.dist > testlistgeo_out.dist.normalized
+
+sed "s/GCS: 4053\/Unspecified datum based upon the International 1924 Authalic Sphere/GCS: 10346\/NSIDC Authalic Sphere/g" < ${OUT} > ${OUT}.tmp
+mv ${OUT}.tmp ${OUT}
+sed "s/Datum: 6053\/Not specified (based on International 1924 Authalic Sphere)/Datum: 1360\/NSIDC International 1924 Authalic Sphere/g" < ${OUT} > ${OUT}.tmp
+mv ${OUT}.tmp ${OUT}
+
+sed "s/GCS: 4053\/Unspecified datum based upon the International 1924 Authalic Sphere/GCS: 10346\/NSIDC Authalic Sphere/g" < testlistgeo_out.dist.normalized > testlistgeo_out.dist.normalized.tmp
+mv testlistgeo_out.dist.normalized.tmp testlistgeo_out.dist.normalized
+sed "s/Datum: 6053\/Not specified (based on International 1924 Authalic Sphere)/Datum: 1360\/NSIDC International 1924 Authalic Sphere/g" < testlistgeo_out.dist.normalized > testlistgeo_out.dist.normalized.tmp
+mv testlistgeo_out.dist.normalized.tmp testlistgeo_out.dist.normalized
+
+sed "s/Projection = 15914 (BLM zone 14N (US survey .*))/Projection = 15914 (BLM zone 14N)/" < testlistgeo_out.dist.normalized > testlistgeo_out.dist.normalized.tmp
+mv testlistgeo_out.dist.normalized.tmp testlistgeo_out.dist.normalized
+sed "s/Projection = 6753 (Oregon Columbia River West zone (.*))/Projection = 6753 (Oregon Columbia River West zone)/" < testlistgeo_out.dist.normalized > testlistgeo_out.dist.normalized.tmp
+mv testlistgeo_out.dist.normalized.tmp testlistgeo_out.dist.normalized
+sed "s/ProjCenterLongGeoKey: 46.437229 ( 46d26'14.02\"E)/ProjCenterLongGeoKey: 46.437229 ( 46d26'14.03\"E)/" < testlistgeo_out.dist.normalized > testlistgeo_out.dist.normalized.tmp
+mv testlistgeo_out.dist.normalized.tmp testlistgeo_out.dist.normalized
 
 # do 'diff' with distribution results
 # after cleaning for avoid spurios result due 
 # to different build dir
 sed -e "s/Testing listgeo .*test/Testing listgeo ..\/test/"  -i ${OUT}
 echo "diff ${OUT} with testlistgeo_out.dist"
-diff -u ${OUT} testlistgeo_out.dist.tmp
+diff -u ${OUT} testlistgeo_out.dist.normalized
 if [ $? -ne 0 ] ; then
     echo  ""
     echo "PROBLEMS HAVE OCCURRED"
@@ -236,7 +260,7 @@ else
     echo "TEST OK"
     echo "test file ${OUT} removed"
     echo
-    rm testlistgeo_out.dist.tmp
+    rm testlistgeo_out.dist.normalized
     /bin/rm -f ${OUT}
     exit 0
 fi

@@ -1,7 +1,7 @@
 /* geotifcp.c -- based on Sam Leffler's "tiffcp" code */
 
 /*
- *  Original code had this copyright notice: 
+ *  Original code had this copyright notice:
  *
  * Copyright (c) 1988-1995 Sam Leffler
  * Copyright (c) 1991-1995 Silicon Graphics, Inc.
@@ -104,12 +104,9 @@ main(int argc, char* argv[])
 	uint32_t deftilelength = (uint32_t) -1;
 	uint32_t defrowsperstrip = (uint32_t) -1;
 	uint32_t diroff = 0;
-	TIFF* in;
-	TIFF* out;
 	char mode[10];
 	char* mp = mode;
 	int c;
-	extern int optind;
 	extern char* optarg;
 
 	*mp++ = 'w';
@@ -143,7 +140,7 @@ main(int argc, char* argv[])
 		case 'g':		/* GeoTIFF metadata file */
 			geofile = optarg;
 			break;
-		case '4':	       
+		case '4':
 			proj4_string = optarg;
 			break;
 		case 'l':		/* tile length */
@@ -197,14 +194,16 @@ main(int argc, char* argv[])
 			usage();
 			/*NOTREACHED*/
 		}
+
+	extern int optind;
 	if (argc - optind < 2)
 		usage();
         printf( "mode=%s\n", mode);
-	out = TIFFOpen(argv[argc-1], mode);
+	TIFF *out = TIFFOpen(argv[argc-1], mode);
 	if (out == NULL)
 		return (-2);
 	for (; optind < argc-1 ; optind++) {
-		in = TIFFOpen(argv[optind], "r");
+		TIFF *in = TIFFOpen(argv[optind], "r");
 		if (in == NULL)
 			return (-3);
 		if (diroff != 0 && !TIFFSetSubDirectory(in, diroff)) {
@@ -240,7 +239,7 @@ static void ApplyWorldFile(const char *worldfilename, TIFF *out)
     double	pixsize[3], xoff, yoff, tiepoint[6], x_rot, y_rot;
     int         success;
 
-    /* 
+    /*
      * Read the world file.  Note we currently ignore rotational coefficients!
      */
     tfw = fopen( worldfilename, "rt" );
@@ -285,9 +284,9 @@ static void ApplyWorldFile(const char *worldfilename, TIFF *out)
     else
     {
         double	adfMatrix[16];
-        
+
         memset(adfMatrix,0,sizeof(double) * 16);
-        
+
         adfMatrix[0] = pixsize[0];
         adfMatrix[1] = x_rot;
         adfMatrix[3] = xoff - (pixsize[0]+x_rot) * 0.5;
@@ -295,7 +294,7 @@ static void ApplyWorldFile(const char *worldfilename, TIFF *out)
         adfMatrix[5] = pixsize[1];
         adfMatrix[7] = yoff - (pixsize[1]+y_rot) * 0.5;
         adfMatrix[15] = 1.0;
-        
+
         TIFFSetField( out, TIFFTAG_GEOTRANSMATRIX, 16, adfMatrix );
     }
 }
@@ -359,7 +358,7 @@ static void CopyGeoTIFF(TIFF * in, TIFF *out)
         TIFFSetField(out, GTIFF_PIXELSCALE, d_list_count, d_list);
     if (TIFFGetField(in, GTIFF_TRANSMATRIX, &d_list_count, &d_list))
         TIFFSetField(out, GTIFF_TRANSMATRIX, d_list_count, d_list);
-            
+
     /* Here we violate the GTIF abstraction to retarget on another file.
        We should just have a function for copying tags from one GTIF object
        to another. */
@@ -781,7 +780,7 @@ DECLAREcpFunc(cpContig2ContigByRow_8_to_4)
     (void) spp;
     for (row = 0; row < imagelength; row++) {
         int i_in, i_out_byte;
-            
+
         if (TIFFReadScanline(in, buf_in, row, 0) < 0 && !ignore)
             goto done;
 
@@ -792,7 +791,7 @@ DECLAREcpFunc(cpContig2ContigByRow_8_to_4)
             buf_out[i_out_byte] =
                 (buf_in[i_in] & 0xf)*16 + (buf_in[i_in+1] & 0xf);
         }
-        
+
         if (TIFFWriteScanline(out, buf_out, row, 0) < 0)
             goto bad;
     }
@@ -1476,7 +1475,7 @@ pickCopyFunc(TIFF* in, TIFF* out, uint16_t bitspersample, uint16_t samplesperpix
               return cpContig2ContigByRow_8_to_4;
           else
               return cpContig2ContigByRow;
-          
+
 	case pack(PLANARCONFIG_CONTIG,   PLANARCONFIG_CONTIG,   F,F,T):
           if( convert_8_to_4 )
               return cpContig2ContigByRow_8_to_4;

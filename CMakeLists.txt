@@ -5,31 +5,33 @@
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
 ###############################################################################
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0)
+
 PROJECT(GeoTIFF)
+
+include(GNUInstallDirs)
 
 SET(GEOTIFF_LIB_NAME geotiff)
 SET(GEOTIFF_LIBRARY_TARGET geotiff_library)
 
 ##############################################################################
 # CMake settings
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0)
-
 SET(CMAKE_COLOR_MAKEFILE ON)
 
 # Version information
 set(PROJECT_VERSION_MAJOR 1)
 set(PROJECT_VERSION_MINOR 7)
-set(PROJECT_VERSION_PATCH 1)
+set(PROJECT_VERSION_PATCH 3)
 set(PROJECT_VERSION
   "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 set(GeoTIFF_VERSION ${PROJECT_VERSION})
 
 # Set library version to match that of autoconf:
-# libgeotiff.so -> libgeotiff.so.2.2.0
-# libgeotiff.so.2 -> libgeotiff.so.2.2.0
-# libgeotiff.so.2.2.0
+# libgeotiff.so -> libgeotiff.so.5
+# libgeotiff.so.5 -> libgeotiff.so.5.3.2
+# libgeotiff.so.5.3.2
 set(LINK_SOVERSION "5")
-set(LINK_VERSION "5.2.0")
+set(LINK_VERSION "5.3.2")
 
 string (TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 string (TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPER)
@@ -42,6 +44,8 @@ SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
 ###############################################################################
 # General build settings
+
+option(BUILD_SHARED_LIBS "Set ON to build shared library" ON)
 
 IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Debug CACHE STRING
@@ -239,38 +243,17 @@ SET(GEOTIFF_MAN_PAGES
 
 #    ${PROJECT_BINARY_DIR}/geotiff_version.h
 
-SET(DEFAULT_BIN_SUBDIR bin)
-SET(DEFAULT_LIB_SUBDIR lib)
-SET(DEFAULT_INCLUDE_SUBDIR include)
-
-# Locations are changeable by user to customize layout of GeoTIFF installation
-# (default values are platform-specIFic)
-SET(GEOTIFF_BIN_SUBDIR ${DEFAULT_BIN_SUBDIR} CACHE STRING
-    "Subdirectory where executables will be installed")
-SET(GEOTIFF_LIB_SUBDIR ${DEFAULT_LIB_SUBDIR} CACHE STRING
-    "Subdirectory where libraries will be installed")
-SET(GEOTIFF_INCLUDE_SUBDIR ${DEFAULT_INCLUDE_SUBDIR} CACHE STRING
-    "Subdirectory where header files will be installed")
-
-# Mark *_SUBDIR variables as advanced and dedicated to use by power-users only.
-MARK_AS_ADVANCED(GEOTIFF_BIN_SUBDIR GEOTIFF_LIB_SUBDIR GEOTIFF_INCLUDE_SUBDIR)
-
-# Full paths for the installation
-SET(GEOTIFF_BIN_DIR ${GEOTIFF_BIN_SUBDIR})
-SET(GEOTIFF_LIB_DIR ${GEOTIFF_LIB_SUBDIR})
-SET(GEOTIFF_INCLUDE_DIR ${GEOTIFF_INCLUDE_SUBDIR})
-
 # Install doc files
 INSTALL(FILES
-    AUTHORS ChangeLog COPYING INSTALL LICENSE README README_BIN README.WIN
-    DESTINATION doc)
+    AUTHORS ChangeLog COPYING LICENSE README README_BIN README.WIN
+    DESTINATION ${CMAKE_INSTALL_DOCDIR})
 
 # Install man pages
-INSTALL(FILES ${GEOTIFF_MAN_PAGES} DESTINATION share/man/man1)
+INSTALL(FILES ${GEOTIFF_MAN_PAGES} DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
 
 
 # Install header files for development distribution
-INSTALL(FILES ${GEOTIFF_LIB_HEADERS} DESTINATION ${GEOTIFF_INCLUDE_DIR})
+INSTALL(FILES ${GEOTIFF_LIB_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 ###############################################################################
 # Build libxtiff library
@@ -323,24 +306,25 @@ if(UNIX)
       set_target_properties(
         ${GEOTIFF_LIBRARY_TARGET}
         PROPERTIES
-        INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/${GEOTIFF_LIB_DIR}")
+        INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
    endif()
 endif()
 
 SET_TARGET_PROPERTIES(${GEOTIFF_LIBRARY_TARGET} PROPERTIES
    OUTPUT_NAME ${GEOTIFF_LIB_NAME})
 
-set(CONFIG_DEPENDENCIES "")
+set(CONFIG_PUBLIC_DEPENDENCIES "")
+set(CONFIG_PRIVATE_DEPENDENCIES "")
 if(TARGET TIFF::TIFF)
     set(TIFF_LIBRARIES TIFF::TIFF)
-    string(APPEND CONFIG_DEPENDENCIES "  find_dependency(TIFF)\n")
+    string(APPEND CONFIG_PUBLIC_DEPENDENCIES "find_dependency(TIFF)\n")
 endif()
 target_link_libraries(${GEOTIFF_LIBRARY_TARGET} PUBLIC
     ${TIFF_LIBRARIES})
 
 if(TARGET PROJ::proj)
     set(PROJ_LIBRARIES PROJ::proj)
-    string(APPEND CONFIG_DEPENDENCIES "  find_dependency(PROJ CONFIG)\n")
+    string(APPEND CONFIG_PRIVATE_DEPENDENCIES "  find_dependency(PROJ CONFIG)\n")
 endif()
 target_link_libraries(${GEOTIFF_LIBRARY_TARGET} PRIVATE
     ${PROJ_LIBRARIES})
@@ -348,14 +332,35 @@ target_link_libraries(${GEOTIFF_LIBRARY_TARGET} PRIVATE
 target_include_directories(
   ${GEOTIFF_LIBRARY_TARGET}
   PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
-         $<INSTALL_INTERFACE:${GEOTIFF_INCLUDE_DIR}>)
+         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 INSTALL( TARGETS ${GEOTIFF_LIBRARY_TARGET}
      EXPORT depends
-     RUNTIME DESTINATION ${GEOTIFF_BIN_DIR}
-     LIBRARY DESTINATION ${GEOTIFF_LIB_DIR}
-     PUBLIC_HEADER DESTINATION ${GEOTIFF_INCLUDE_DIR}
-     ARCHIVE DESTINATION ${GEOTIFF_LIB_DIR} )
+     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} )
+
+# Install libgeotiff.pc
+set(prefix "${CMAKE_INSTALL_PREFIX}")
+set(exec_prefix "\${prefix}")
+if(IS_ABSOLUTE "${CMAKE_INSTALL_LIBDIR}")
+    set(libdir "${CMAKE_INSTALL_LIBDIR}")
+else()
+    set(libdir "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
+endif()
+if(IS_ABSOLUTE "${CMAKE_INSTALL_INCLUDEDIR}")
+    set(includedir "${CMAKE_INSTALL_INCLUDEDIR}")
+else()
+    set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
+SET(PACKAGE_NAME ${PROJECT_NAME})
+SET(VERSION ${PROJECT_VERSION})
+configure_file(libgeotiff.pc.in ${CMAKE_CURRENT_BINARY_DIR}/libgeotiff.pc @ONLY)
+
+INSTALL(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/libgeotiff.pc
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
 # Define grouping of source files in PROJECT file (e.g. Visual Studio)
 SOURCE_GROUP("CMake Files" FILES CMakeLists.txt)

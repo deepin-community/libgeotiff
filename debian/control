@@ -9,7 +9,7 @@ Build-Depends: debhelper-compat (= 13),
                libjpeg-dev,
                libproj-dev (>= 6.0.0),
                libtiff-dev,
-               pkg-config,
+               pkgconf,
                zlib1g-dev
 Standards-Version: 4.6.2
 Vcs-Browser: https://salsa.debian.org/debian-gis-team/libgeotiff
